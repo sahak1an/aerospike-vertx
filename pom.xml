@@ -19,6 +19,14 @@
         <vertx.version>4.4.5</vertx.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub</name>
+            <url>https://maven.pkg.github.com/sahak1an/aerospike-vertx</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -61,6 +69,11 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-kqueue</artifactId>
             <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>LATEST</version>
         </dependency>
     </dependencies>
 

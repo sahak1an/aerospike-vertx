@@ -36,9 +36,14 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;
+import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.locks.LockSupport;
+import org.jboss.logging.Logger;
 
 public class AerospikeClientImpl implements AerospikeClient {
+
+  private static final Logger LOG = Logger.getLogger(AerospikeClient.class);
 
   private final VertxInternal vertx;
   private final EventLoops eventLoops;
@@ -67,19 +72,19 @@ public class AerospikeClientImpl implements AerospikeClient {
   }
 
   private com.aerospike.client.AerospikeClient connectClientWithRetry(int retryCount) {
-    if (this.ops.getMaxConnectRetries() != -1
-        && retryCount > this.ops.getMaxConnectRetries()) {
-      System.out.println("Exhausted max connection retries after {} attempts");
+    if (this.ops.getMaxConnectRetries() != -1 && retryCount > this.ops.getMaxConnectRetries()) {
+      LOG.warnv("Exhausted max connection retries after {0} attempts", retryCount);
       throw new AerospikeException(ResultCode.MAX_RETRIES_EXCEEDED, "Cannot connect to Aerospike");
     } else {
       try {
-        Thread.sleep(2);
-        return new com.aerospike.client.AerospikeClient(ops.getClientPolicy(),
-            new Host(ops.getHost(),
-                ops.getPort()));
+        LockSupport.parkNanos(Duration.ofMillis(100).toNanos());
+        return new com.aerospike.client.AerospikeClient(
+            ops.getClientPolicy(),
+            new Host(ops.getHost(), ops.getPort())
+        );
       } catch (Exception e) {
-        System.out.println("Error while connecting to aerospike");
-        System.out.println("Retrying to connect to aerospike");
+        LOG.warn("Error while connecting to aerospike");
+        LOG.info("Retrying to connect to aerospike");
         return connectClientWithRetry(retryCount + 1);
       }
     }
